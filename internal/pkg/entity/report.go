@@ -13,4 +13,5 @@ type Report struct {
 	IsRequestDoctor bool      `gorm:"NOT NULL"`
 	IsApproved      bool      `gorm:"NOT NULL"`
 	AnimalID        uuid.UUID `gorm:"type:CHAR(36); NOT NULL"`
+	UserID          uuid.UUID `gorm:"type:CHAR(36); NOT NULL"`
 }

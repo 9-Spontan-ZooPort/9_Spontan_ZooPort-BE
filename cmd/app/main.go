@@ -25,16 +25,19 @@ func main() {
 	authRepo := repository.NewAuthRepository(db)
 	speciesRepo := repository.NewSpeciesRepository(db)
 	animalRepo := repository.NewAnimalRepository(db)
+	reportRepo := repository.NewReportRepository(db)
 
 	authService := service.NewAuthService(authRepo, jwtAuth)
 	speciesService := service.NewSpeciesService(speciesRepo)
 	animalService := service.NewAnimalService(animalRepo)
+	reportService := service.NewReportService(reportRepo)
 
 	mid := middleware.NewAuthMiddleware(jwtAuth)
 
 	authHandler := rest.NewAuthHandler(authService)
 	speciesHandler := rest.NewSpeciesHandler(speciesService)
 	animalHandler := rest.NewAnimalHandler(animalService)
+	reportHandler := rest.NewReportHandler(reportService)
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 
@@ -54,6 +57,12 @@ func main() {
 	animals.POST("/", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), animalHandler.CreateAnimal)
 	animals.GET("/:id", mid.SoftAuthenticate, animalHandler.GetByID)
 	animals.GET("/", mid.SoftAuthenticate, animalHandler.GetBySpecies)
+
+	reports := v1.Group("/reports")
+	reports.POST("/", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), reportHandler.Create)
+	reports.PATCH("/:id/approve", mid.Authenticate, mid.RequireOneRole("admin"), reportHandler.Approve)
+	reports.GET("/:id", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), reportHandler.GetByID)
+	reports.GET("/", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), reportHandler.Get)
 
 	if err := router.Run(":" + os.Getenv("PORT")); err != nil {
 		log.Fatalln(err)

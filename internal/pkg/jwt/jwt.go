@@ -43,10 +43,9 @@ func (j JWT) Create(user entity.User) (string, error) {
 			Subject:   user.ID.String(),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.TTL)),
 		},
-		Email:     user.Email,
-		Name:      user.Name,
-		Role:      user.Role,
-		AvatarUrl: user.AvatarUrl,
+		Email: user.Email,
+		Name:  user.Name,
+		Role:  user.Role,
 	}
 
 	unsignedJWT := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

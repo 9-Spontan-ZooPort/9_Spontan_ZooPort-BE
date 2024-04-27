@@ -79,6 +79,7 @@ func (m AuthMiddleware) SoftAuthenticate(ctx *gin.Context) {
 func (m AuthMiddleware) RequireOneRole(role ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if !role2.HasOneRole(ctx, role...) {
+			response.NewApiResponse(403, "no permission", nil).Send(ctx)
 			ctx.Abort()
 			return
 		}
