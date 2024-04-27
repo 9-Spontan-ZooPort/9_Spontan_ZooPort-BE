@@ -23,20 +23,33 @@ func main() {
 	jwtAuth := jwt.NewJWT(os.Getenv("JWT_SECRET"), os.Getenv("JWT_TTL"))
 
 	authRepo := repository.NewAuthRepository(db)
+	speciesRepo := repository.NewSpeciesRepository(db)
+	animalRepo := repository.NewAnimalRepository(db)
 
 	authService := service.NewAuthService(authRepo, jwtAuth)
+	speciesService := service.NewSpeciesService(speciesRepo)
+	animalService := service.NewAnimalService(animalRepo)
 
-	_ = middleware.NewAuthMiddleware(jwtAuth) //TODO: Implement auth middleware in the router
+	mid := middleware.NewAuthMiddleware(jwtAuth)
 
 	authHandler := rest.NewAuthHandler(authService)
+	speciesHandler := rest.NewSpeciesHandler(speciesService)
+	animalHandler := rest.NewAnimalHandler(animalService)
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 
 	router := gin.Default()
 	v1 := router.Group("/v1")
 
-	v1.POST("/auth/login", authHandler.Login)
-	v1.POST("/auth/register", middleware.RequireSuperAdmin, authHandler.Register)
+	auth := v1.Group("/auth")
+	auth.POST("/login", authHandler.Login)
+	auth.POST("/register", middleware.RequireSuperAdmin, authHandler.Register)
+
+	species := v1.Group("/species")
+	species.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), speciesHandler.CreateSpecies)
+
+	animals := v1.Group("/animals")
+	animals.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), animalHandler.CreateAnimal)
 
 	if err := router.Run(":" + os.Getenv("PORT")); err != nil {
 		log.Fatalln(err)
