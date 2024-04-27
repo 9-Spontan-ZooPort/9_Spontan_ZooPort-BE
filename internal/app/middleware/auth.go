@@ -1,16 +1,16 @@
 package middleware
 
 import (
-	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/entity"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/jwt"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/response"
 	"github.com/gin-gonic/gin"
 	"strings"
+	"time"
 )
 
 type IAuthMiddleware interface {
 	Authenticate(ctx *gin.Context)
-	RequireAdmin(ctx *gin.Context)
+	RequireRole(role string) gin.HandlerFunc
 }
 
 type AuthMiddleware struct {
@@ -38,7 +38,7 @@ func (m AuthMiddleware) Authenticate(ctx *gin.Context) {
 		return
 	}
 
-	if claims.ExpiresAt.Time.Before(claims.IssuedAt.Time) {
+	if claims.ExpiresAt.Time.Before(time.Now()) {
 		response.NewApiResponse(401, "token expired", nil).Send(ctx)
 		ctx.Abort()
 		return
@@ -48,19 +48,21 @@ func (m AuthMiddleware) Authenticate(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func (m AuthMiddleware) RequireAdmin(ctx *gin.Context) {
-	userTemp, ok := ctx.Get("user")
-	if !ok {
-		response.NewApiResponse(401, "unauthorized", nil).Send(ctx)
-		ctx.Abort()
-		return
-	}
-	user := userTemp.(entity.User)
-	if user.Role != "admin" {
-		response.NewApiResponse(403, "no permission", nil).Send(ctx)
-		ctx.Abort()
-		return
-	}
+func (m AuthMiddleware) RequireRole(role string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		claimsTemp, ok := ctx.Get("claims")
+		if !ok {
+			response.NewApiResponse(401, "unauthorized", nil).Send(ctx)
+			ctx.Abort()
+			return
+		}
+		claims := claimsTemp.(jwt.Claims)
+		if claims.Role != role {
+			response.NewApiResponse(403, "no permission", nil).Send(ctx)
+			ctx.Abort()
+			return
+		}
 
-	ctx.Next()
+		ctx.Next()
+	}
 }
