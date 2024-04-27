@@ -46,12 +46,12 @@ func main() {
 	auth.POST("/register", middleware.RequireSuperAdmin, authHandler.Register)
 
 	species := v1.Group("/species")
-	species.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), speciesHandler.CreateSpecies)
+	species.POST("/", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), speciesHandler.CreateSpecies)
 	species.GET("/:id", speciesHandler.GetByID)
 	species.GET("/", speciesHandler.GetAll)
 
 	animals := v1.Group("/animals")
-	animals.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), animalHandler.CreateAnimal)
+	animals.POST("/", mid.Authenticate, mid.RequireOneRole("zookeeper", "admin"), animalHandler.CreateAnimal)
 	animals.GET("/:id", mid.SoftAuthenticate, animalHandler.GetByID)
 	animals.GET("/", mid.SoftAuthenticate, animalHandler.GetBySpecies)
 

@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/jwt"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/response"
+	role2 "github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/role"
 	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
@@ -10,7 +11,7 @@ import (
 
 type IAuthMiddleware interface {
 	Authenticate(ctx *gin.Context)
-	RequireRole(role string) gin.HandlerFunc
+	RequireOneRole(role ...string) gin.HandlerFunc
 	SoftAuthenticate(ctx *gin.Context)
 }
 
@@ -75,20 +76,12 @@ func (m AuthMiddleware) SoftAuthenticate(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func (m AuthMiddleware) RequireRole(role string) gin.HandlerFunc {
+func (m AuthMiddleware) RequireOneRole(role ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		roleReal, ok := ctx.Get("role")
-		if !ok {
-			response.NewApiResponse(401, "unauthorized", nil).Send(ctx)
+		if !role2.HasOneRole(ctx, role...) {
 			ctx.Abort()
 			return
 		}
-		if role != roleReal {
-			response.NewApiResponse(403, "no permission", nil).Send(ctx)
-			ctx.Abort()
-			return
-		}
-
 		ctx.Next()
 	}
 }
