@@ -13,6 +13,8 @@ type SpeciesService struct {
 
 type ISpeciesService interface {
 	CreateSpecies(request model.CreateSpeciesRequest) response.ApiResponse
+	GetByID(id string) response.ApiResponse
+	GetAll() response.ApiResponse
 }
 
 func NewSpeciesService(r repository.ISpeciesRepository) ISpeciesService {
@@ -31,4 +33,37 @@ func (s *SpeciesService) CreateSpecies(request model.CreateSpeciesRequest) respo
 	}
 
 	return response.NewApiResponse(201, "successfully created species", nil)
+}
+
+func (s *SpeciesService) GetByID(id string) response.ApiResponse {
+	species, err := s.r.GetByID(id)
+	if err != nil {
+		return response.NewApiResponse(500, "fail to get species", nil)
+	}
+
+	res := model.GetSpeciesResponse{
+		ID:    species.ID,
+		Name:  species.Name,
+		Class: species.Class,
+	}
+
+	return response.NewApiResponse(200, "successfully get species", res)
+}
+
+func (s *SpeciesService) GetAll() response.ApiResponse {
+	species, err := s.r.GetAll()
+	if err != nil {
+		return response.NewApiResponse(500, "fail to get species", nil)
+	}
+
+	var res []model.GetSpeciesResponse
+	for _, v := range species {
+		res = append(res, model.GetSpeciesResponse{
+			ID:    v.ID,
+			Name:  v.Name,
+			Class: v.Class,
+		})
+	}
+
+	return response.NewApiResponse(200, "successfully get species", res)
 }

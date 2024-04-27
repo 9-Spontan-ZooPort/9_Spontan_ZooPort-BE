@@ -47,6 +47,8 @@ func main() {
 
 	species := v1.Group("/species")
 	species.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), speciesHandler.CreateSpecies)
+	species.GET("/:id", speciesHandler.GetByID)
+	species.GET("/", speciesHandler.GetAll)
 
 	animals := v1.Group("/animals")
 	animals.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), animalHandler.CreateAnimal)

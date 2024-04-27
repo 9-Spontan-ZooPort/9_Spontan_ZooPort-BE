@@ -9,3 +9,9 @@ type CreateSpeciesRequest struct {
 type CreateSpeciesResponse struct {
 	ID string `json:"id"`
 }
+
+type GetSpeciesResponse struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Class string `json:"class"`
+}

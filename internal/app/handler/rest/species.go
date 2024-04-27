@@ -13,6 +13,8 @@ type SpeciesHandler struct {
 
 type ISpeciesHandler interface {
 	CreateSpecies(ctx *gin.Context)
+	GetByID(ctx *gin.Context)
+	GetAll(ctx *gin.Context)
 }
 
 func NewSpeciesHandler(s service.ISpeciesService) ISpeciesHandler {
@@ -27,4 +29,14 @@ func (h *SpeciesHandler) CreateSpecies(ctx *gin.Context) {
 	}
 
 	h.s.CreateSpecies(request).Send(ctx)
+}
+
+func (h *SpeciesHandler) GetByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	h.s.GetByID(id).Send(ctx)
+}
+
+func (h *SpeciesHandler) GetAll(ctx *gin.Context) {
+	h.s.GetAll().Send(ctx)
 }
