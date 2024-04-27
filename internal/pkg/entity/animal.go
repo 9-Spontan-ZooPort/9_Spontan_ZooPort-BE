@@ -16,6 +16,5 @@ type Animal struct {
 	Weight          float64   `gorm:"NOT NULL"`
 	StatusKesehatan string    `gorm:"type:VARCHAR(255); NOT NULL; DEFAULT:'sehat'"`
 	PhotoUrl        string    `gorm:"type:VARCHAR(255); NOT NULL"`
-	Description     string    `gorm:"type:TEXT"`
-	MedicalHistorys []MedicalRecord
+	MedicalHistorys []Report
 }

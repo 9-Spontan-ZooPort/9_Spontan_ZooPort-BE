@@ -4,7 +4,6 @@ import (
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/app/service"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/model"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/response"
-	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/role"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -41,11 +40,11 @@ func (h *AnimalHandler) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	h.s.GetByID(id, !role.HasOneRole(ctx, "zookeeper", "admin")).Send(ctx)
+	h.s.GetByID(id).Send(ctx)
 }
 
 func (h *AnimalHandler) GetBySpecies(ctx *gin.Context) {
 	speciesID := ctx.Query("species")
 
-	h.s.GetBySpecies(speciesID, !role.HasOneRole(ctx, "zookeeper", "admin")).Send(ctx)
+	h.s.GetBySpecies(speciesID).Send(ctx)
 }

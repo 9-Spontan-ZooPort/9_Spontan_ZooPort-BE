@@ -10,6 +10,6 @@ func AutoMigrate(db *gorm.DB) error {
 		entity.User{},
 		entity.Species{},
 		entity.Animal{},
-		entity.MedicalRecord{},
+		entity.Report{},
 	)
 }

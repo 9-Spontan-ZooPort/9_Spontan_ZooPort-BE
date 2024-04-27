@@ -11,8 +11,8 @@ import (
 
 type IAnimalService interface {
 	CreateAnimal(request model.CreateAnimalRequest) response.ApiResponse
-	GetByID(id uuid.UUID, hideDetails bool) response.ApiResponse
-	GetBySpecies(speciesID string, hideDetails bool) response.ApiResponse
+	GetByID(id uuid.UUID) response.ApiResponse
+	GetBySpecies(speciesID string) response.ApiResponse
 }
 
 type AnimalService struct {
@@ -43,7 +43,6 @@ func (s *AnimalService) CreateAnimal(request model.CreateAnimalRequest) response
 		Weight:          request.Weight,
 		StatusKesehatan: request.StatusKesehatan,
 		PhotoUrl:        request.PhotoUrl,
-		Description:     request.Description,
 	}
 
 	if err = s.r.CreateAnimal(animal); err != nil {
@@ -53,7 +52,7 @@ func (s *AnimalService) CreateAnimal(request model.CreateAnimalRequest) response
 	return response.NewApiResponse(201, "successfully created animal", model.CreateAnimalResponse{ID: id.String()})
 }
 
-func (s *AnimalService) GetByID(id uuid.UUID, hideDetails bool) response.ApiResponse {
+func (s *AnimalService) GetByID(id uuid.UUID) response.ApiResponse {
 	animal, err := s.r.GetByID(id)
 	if err != nil {
 		return response.NewApiResponse(500, "fail to get animal", nil)
@@ -68,17 +67,12 @@ func (s *AnimalService) GetByID(id uuid.UUID, hideDetails bool) response.ApiResp
 		Weight:          animal.Weight,
 		StatusKesehatan: animal.StatusKesehatan,
 		PhotoUrl:        animal.PhotoUrl,
-		Description:     animal.Description,
-	}
-
-	if hideDetails {
-		res.StatusKesehatan = ""
 	}
 
 	return response.NewApiResponse(200, "successfully get animal", res)
 }
 
-func (s *AnimalService) GetBySpecies(speciesID string, hideDetails bool) response.ApiResponse {
+func (s *AnimalService) GetBySpecies(speciesID string) response.ApiResponse {
 	animals, err := s.r.GetBySpecies(speciesID)
 	if err != nil {
 		return response.NewApiResponse(500, "fail to get animals", nil)
@@ -95,10 +89,6 @@ func (s *AnimalService) GetBySpecies(speciesID string, hideDetails bool) respons
 			Weight:          v.Weight,
 			StatusKesehatan: v.StatusKesehatan,
 			PhotoUrl:        v.PhotoUrl,
-			Description:     v.Description,
-		}
-		if hideDetails {
-			nextRes.StatusKesehatan = ""
 		}
 		res = append(res, nextRes)
 	}
