@@ -19,6 +19,9 @@ func NewApiResponse(status int, message string, data any) ApiResponse {
 }
 
 func (r ApiResponse) Send(ctx *gin.Context) {
+	ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	ctx.Writer.Header().Set("Access-Control-Allow-Headers", "*")
+	ctx.Writer.Header().Set("Access-Control-Allow-Methods", "*")
 	ctx.JSON(r.StatusCode, r)
 }
 
