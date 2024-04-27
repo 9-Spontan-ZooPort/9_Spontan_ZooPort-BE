@@ -52,6 +52,8 @@ func main() {
 
 	animals := v1.Group("/animals")
 	animals.POST("/", mid.Authenticate, mid.RequireRole("zookeeper"), animalHandler.CreateAnimal)
+	animals.GET("/:id", mid.SoftAuthenticate, animalHandler.GetByID)
+	animals.GET("/", mid.SoftAuthenticate, animalHandler.GetBySpecies)
 
 	if err := router.Run(":" + os.Getenv("PORT")); err != nil {
 		log.Fatalln(err)

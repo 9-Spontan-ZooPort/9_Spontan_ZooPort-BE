@@ -1,5 +1,10 @@
 package model
 
+import (
+	"github.com/google/uuid"
+	"time"
+)
+
 type CreateAnimalRequest struct {
 	SpeciesID       string  `json:"species_id" binding:"required,max=255"`
 	Nickname        string  `json:"nickname" binding:"required,max=255"`
@@ -13,4 +18,16 @@ type CreateAnimalRequest struct {
 
 type CreateAnimalResponse struct {
 	ID string `json:"id"`
+}
+
+type GetAnimalResponse struct {
+	ID              uuid.UUID `json:"id"`
+	SpeciesID       string    `json:"species_id"`
+	Nickname        string    `json:"nickname"`
+	BirthDate       time.Time `json:"birth_date"`
+	Gender          string    `json:"gender"`
+	Weight          float64   `json:"weight"`
+	StatusKesehatan string    `json:"status_kesehatan"`
+	PhotoUrl        string    `json:"photo_url"`
+	Description     string    `json:"description"`
 }

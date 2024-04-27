@@ -11,6 +11,7 @@ import (
 type IAuthMiddleware interface {
 	Authenticate(ctx *gin.Context)
 	RequireRole(role string) gin.HandlerFunc
+	SoftAuthenticate(ctx *gin.Context)
 }
 
 type AuthMiddleware struct {
@@ -45,19 +46,44 @@ func (m AuthMiddleware) Authenticate(ctx *gin.Context) {
 	}
 
 	ctx.Set("claims", claims)
+	ctx.Set("role", claims.Role)
+	ctx.Next()
+}
+
+func (m AuthMiddleware) SoftAuthenticate(ctx *gin.Context) {
+	bearer := ctx.GetHeader("Authorization")
+	if bearer == "" {
+		ctx.Next()
+		return
+	}
+
+	token := strings.Split(bearer, " ")[1]
+	var claims jwt.Claims
+	err := m.jwtAuth.Decode(token, &claims)
+	if err != nil {
+		ctx.Next()
+		return
+	}
+
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		ctx.Next()
+		return
+	}
+
+	ctx.Set("claims", claims)
+	ctx.Set("role", claims.Role)
 	ctx.Next()
 }
 
 func (m AuthMiddleware) RequireRole(role string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		claimsTemp, ok := ctx.Get("claims")
+		roleReal, ok := ctx.Get("role")
 		if !ok {
 			response.NewApiResponse(401, "unauthorized", nil).Send(ctx)
 			ctx.Abort()
 			return
 		}
-		claims := claimsTemp.(jwt.Claims)
-		if claims.Role != role {
+		if role != roleReal {
 			response.NewApiResponse(403, "no permission", nil).Send(ctx)
 			ctx.Abort()
 			return

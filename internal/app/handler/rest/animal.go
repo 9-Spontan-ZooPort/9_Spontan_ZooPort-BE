@@ -4,11 +4,15 @@ import (
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/app/service"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/model"
 	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/response"
+	"github.com/9-Spontan-ZooPort/9_Spontan_ZooPort-BE/internal/pkg/role"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type IAnimalHandler interface {
 	CreateAnimal(ctx *gin.Context)
+	GetByID(ctx *gin.Context)
+	GetBySpecies(ctx *gin.Context)
 }
 
 type AnimalHandler struct {
@@ -27,4 +31,21 @@ func (h *AnimalHandler) CreateAnimal(ctx *gin.Context) {
 	}
 
 	h.s.CreateAnimal(request).Send(ctx)
+}
+
+func (h *AnimalHandler) GetByID(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		response.NewApiResponse(400, "invalid id", nil).Send(ctx)
+		return
+	}
+
+	h.s.GetByID(id, !role.HasOneRole(ctx, "zookeeper", "admin")).Send(ctx)
+}
+
+func (h *AnimalHandler) GetBySpecies(ctx *gin.Context) {
+	speciesID := ctx.Query("species")
+
+	h.s.GetBySpecies(speciesID, !role.HasOneRole(ctx, "zookeeper", "admin")).Send(ctx)
 }
